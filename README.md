@@ -1,6 +1,6 @@
-# QueueGo
+QueueGo
 
-## Aplicación de domicilios para demostración de patrones de diseño
+Aplicación de domicilios para demostración de patrones de diseño
 
 QueueGo es una mini aplicación de domicilios desarrollada en Flutter y Dart, creada como proyecto académico para demostrar la aplicación práctica de patrones de diseño creacionales y principios SOLID.
 
@@ -8,9 +8,9 @@ La aplicación simula el flujo básico de una plataforma de domicilios: el usuar
 
 El objetivo principal del proyecto no es implementar una plataforma comercial completa, sino demostrar cómo los patrones de diseño pueden integrarse dentro de una aplicación funcional.
 
----
 
-## Tecnologías
+
+ Tecnologías
 
 - Flutter
 - Dart
@@ -18,9 +18,8 @@ El objetivo principal del proyecto no es implementar una plataforma comercial co
 - Flutter Web
 - Git / GitHub
 
----
 
-## Flujo principal
+Flujo principal
 
 ```text
 Inicio de sesión

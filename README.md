@@ -21,7 +21,7 @@ El objetivo principal del proyecto no es implementar una plataforma comercial co
 
 Flujo principal
 
-```text
+
 Inicio de sesión
        ↓
      Inicio

@@ -1,135 +1,79 @@
 import 'package:flutter/material.dart';
 
-import 'models/pedido.dart';
-import 'models/producto.dart';
-import 'patterns/factory_method/domicilio_factory.dart';
-import 'patterns/factory_method/local_factory.dart';
+import 'controllers/queuego_controller.dart';
+import 'screens/login_screen.dart';
+import 'screens/main_shell.dart';
 
 void main() {
-  runApp(const PatronesApp());
+  runApp(const QueueGoApp());
 }
 
-class PatronesApp extends StatelessWidget {
-  const PatronesApp({super.key});
+class QueueGoApp extends StatefulWidget {
+  const QueueGoApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Patrones de Diseño',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
-        useMaterial3: true,
-      ),
-      home: const HomeScreen(),
-    );
-  }
+  State<QueueGoApp> createState() => _QueueGoAppState();
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class _QueueGoAppState extends State<QueueGoApp> {
+  final QueueGoController controller = QueueGoController();
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  Pedido? pedidoCreado;
-
-  final List<Producto> productos = [
-    Producto(nombre: 'Hamburguesa', precio: 18000),
-    Producto(nombre: 'Gaseosa', precio: 5000),
-  ];
-
-  void crearPedidoDomicilio() {
-    // FACTORY METHOD:
-    // Utilizamos una fábrica concreta para crear
-    // un PedidoDomicilio sin instanciarlo directamente aquí.
-    final factory = DomicilioFactory();
-
-    setState(() {
-      pedidoCreado = factory.crearPedido(
-        id: '001',
-        cliente: 'Jeffer',
-        productos: productos,
-      );
-    });
-  }
-
-  void crearPedidoLocal() {
-    // FACTORY METHOD:
-    // Otra fábrica concreta crea un tipo diferente de Pedido.
-    final factory = LocalFactory();
-
-    setState(() {
-      pedidoCreado = factory.crearPedido(
-        id: '002',
-        cliente: 'Jeffer',
-        productos: productos,
-      );
-    });
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Mini proyecto - Patrones')),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Factory Method',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, _) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: controller.config.nombreAplicacion,
+
+          theme: ThemeData(
+            useMaterial3: true,
+
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.deepOrange,
+              brightness: Brightness.light,
             ),
 
-            const SizedBox(height: 10),
+            scaffoldBackgroundColor: const Color(0xFFF8F8F8),
 
-            const Text(
-              'Crear diferentes tipos de pedidos utilizando fábricas.',
+            appBarTheme: const AppBarTheme(
+              centerTitle: false,
+              elevation: 0,
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.transparent,
             ),
 
-            const SizedBox(height: 30),
-
-            ElevatedButton(
-              onPressed: crearPedidoDomicilio,
-              child: const Text('Crear pedido a domicilio'),
-            ),
-
-            ElevatedButton(
-              onPressed: crearPedidoLocal,
-              child: const Text('Crear pedido para llevar'),
-            ),
-
-            const SizedBox(height: 30),
-
-            if (pedidoCreado != null)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Pedido creado',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text('ID: ${pedidoCreado!.id}'),
-                      Text('Cliente: ${pedidoCreado!.cliente}'),
-                      Text('Tipo: ${pedidoCreado!.tipo}'),
-                      Text('Total: \$${pedidoCreado!.total}'),
-                    ],
-                  ),
-                ),
+            cardTheme: CardThemeData(
+              elevation: 1,
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
               ),
-          ],
-        ),
-      ),
+            ),
+          ),
+
+          home: controller.sesionIniciada
+              ? MainShell(
+                  usuario: controller.usuarioActual!,
+                  restaurantes: controller.restaurantes,
+                  carrito: controller.carrito,
+                  pedidos: controller.pedidos,
+                  cantidadCarrito: controller.cantidadCarrito,
+                  onAddToCart: controller.agregarAlCarrito,
+                  onCheckout: controller.finalizarPedido,
+                  onReorder: controller.repetirPedido,
+                  onLogout: controller.cerrarSesion,
+                )
+              : LoginScreen(onLogin: controller.iniciarSesion),
+        );
+      },
     );
   }
 }

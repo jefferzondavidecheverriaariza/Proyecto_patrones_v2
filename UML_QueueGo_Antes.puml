@@ -1,0 +1,82 @@
+@startuml
+title QueueGo 
+
+skinparam classAttributeIconSize 0
+
+class QueueGoController {
+  - usuarioActual: String?
+  - restaurantes: List<Restaurante>
+  - carrito: List<CarritoItem>
+  - pedidos: List<Pedido>
+  + iniciarSesion(nombre: String): void
+  + cerrarSesion(): void
+  + agregarAlCarrito(producto: Producto): void
+  + finalizarPedido(tipoEntrega: String, metodoPago: MetodoPago): Pedido?
+  + repetirPedido(pedido: Pedido): void
+}
+
+class Restaurante {
+  - id: String
+  - nombre: String
+  - categoria: String
+  - descripcion: String
+  - tiempoEntrega: String
+  - tipoMenu: String
+}
+
+class RestaurantScreen {
+  - restaurante: Restaurante
+  + obtenerProductos(): List<Producto>
+}
+
+class Pedido {
+  - id: String
+  - cliente: String
+  - productos: List<Producto>
+  - tipo: String
+  - metodoPago: MetodoPago
+  - costoDomicilio: double
+  + subtotal: double
+  + total: double
+}
+
+class PedidoDomicilio
+class PedidoLocal
+
+class Producto {
+  - id: String
+  - nombre: String
+  - precio: double
+  - descripcion: String
+  - categoria: String
+}
+
+class MetodoPago {
+  - tipo: TipoMetodoPago
+  - nombre: String
+  - descripcion: String
+}
+
+class CarritoItem {
+  - producto: Producto
+  - cantidad: int
+  + subtotal: double
+}
+
+QueueGoController "1" o-- "*" Restaurante : administra
+QueueGoController "1" o-- "*" CarritoItem : contiene
+QueueGoController "1" o-- "*" Pedido : registra
+QueueGoController ..> Producto : agrega
+QueueGoController ..> MetodoPago : utiliza
+
+RestaurantScreen --> Restaurante : muestra
+RestaurantScreen --> Producto : muestra
+
+Pedido "1" o-- "*" Producto : contiene
+Pedido "1" --> "1" MetodoPago : utiliza
+PedidoDomicilio --|> Pedido
+PedidoLocal --|> Pedido
+
+CarritoItem --> Producto : referencia
+
+@enduml

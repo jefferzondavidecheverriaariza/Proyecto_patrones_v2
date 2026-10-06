@@ -1,0 +1,217 @@
+@startuml
+title QueueGo 
+
+skinparam classAttributeIconSize 0
+
+class QueueGoController {
+  - config: AppConfig
+  - pedidoService: PedidoService
+  - usuarioActual: String?
+  - restaurantes: List<Restaurante>
+  - carrito: List<CarritoItem>
+  - pedidos: List<Pedido>
+  + iniciarSesion(nombre: String): void
+  + cerrarSesion(): void
+  + agregarAlCarrito(producto: Producto): void
+  + finalizarPedido(tipoEntrega: String, metodoPago: MetodoPago): Pedido?
+  + repetirPedido(pedido: Pedido): void
+}
+
+class Restaurante {
+  - id: String
+  - nombre: String
+  - categoria: String
+  - descripcion: String
+  - tiempoEntrega: String
+  - tipoMenu: String
+}
+
+class RestaurantScreen {
+  - restaurante: Restaurante
+  + obtenerFactory(): MenuFactory
+  + obtenerProductos(): List<Producto>
+}
+
+class Producto {
+  - id: String
+  - nombre: String
+  - precio: double
+  - descripcion: String
+  - categoria: String
+}
+
+class Pedido {
+  - id: String
+  - cliente: String
+  - productos: List<Producto>
+  - tipo: String
+  - metodoPago: MetodoPago
+  - costoDomicilio: double
+  + subtotal: double
+  + total: double
+}
+
+class PedidoDomicilio
+class PedidoLocal
+
+class CarritoItem {
+  - producto: Producto
+  - cantidad: int
+  + subtotal: double
+}
+
+class MetodoPago {
+  - tipo: TipoMetodoPago
+  - nombre: String
+  - descripcion: String
+}
+
+interface PedidoService {
+  + crearPedido(...): Pedido
+  + clonarPedido(...): Pedido
+}
+
+class PedidoServiceImpl {
+  + crearPedido(...): Pedido
+  + clonarPedido(...): Pedido
+}
+
+class AppConfig <<Singleton>> {
+  - _instance: AppConfig
+  - tarifaDomicilio: double
+  - moneda: String
+  + AppConfig(): AppConfig
+}
+
+class PedidoBuilder <<Builder>> {
+  + conId(...): PedidoBuilder
+  + conCliente(...): PedidoBuilder
+  + conTipo(...): PedidoBuilder
+  + conMetodoPago(...): PedidoBuilder
+  + agregarProducto(...): PedidoBuilder
+  + build(): Pedido
+}
+
+interface PedidoFactory <<Factory Method>> {
+  + crearPedido(...): Pedido
+}
+
+class DomicilioFactory
+class LocalFactory
+
+class PedidoPrototype <<Prototype>> {
+  - pedidoOriginal: Pedido
+  + clonar(...): Pedido
+}
+
+interface MenuFactory <<Abstract Factory>> {
+  + crearPlatos(): List<Plato>
+  + crearBebida(): Bebida
+}
+
+class MenuTradicionalFactory
+class MenuCaribeFactory
+class MenuSaludableFactory
+
+interface Plato
+interface Bebida
+
+class Hamburguesa
+class HamburguesaBbq
+class PapasFritas
+class ArepaDeHuevo
+class PataconesConCarne
+class Carimanolas
+class Ensalada
+class BowlPollo
+class WrapVegetal
+class Gaseosa
+class JugoCorozo
+class JugoNatural
+
+' =========================
+' FLUJO PRINCIPAL
+' =========================
+
+QueueGoController "1" o-- "*" Restaurante : administra
+QueueGoController "1" o-- "*" CarritoItem : contiene
+QueueGoController "1" o-- "*" Pedido : registra
+QueueGoController --> PedidoService : depende de
+
+' =========================
+' RESTAURANTE + ABSTRACT FACTORY
+' =========================
+
+RestaurantScreen --> Restaurante : recibe
+RestaurantScreen --> MenuFactory : selecciona fábrica
+RestaurantScreen --> Producto : transforma/muestra
+Restaurante --> MenuFactory : tipoMenu determina fábrica
+
+MenuTradicionalFactory ..|> MenuFactory
+MenuCaribeFactory ..|> MenuFactory
+MenuSaludableFactory ..|> MenuFactory
+
+MenuFactory ..> Plato : crea
+MenuFactory ..> Bebida : crea
+
+MenuTradicionalFactory ..> Hamburguesa : crea
+MenuTradicionalFactory ..> HamburguesaBbq : crea
+MenuTradicionalFactory ..> PapasFritas : crea
+MenuTradicionalFactory ..> Gaseosa : crea
+
+MenuCaribeFactory ..> ArepaDeHuevo : crea
+MenuCaribeFactory ..> PataconesConCarne : crea
+MenuCaribeFactory ..> Carimanolas : crea
+MenuCaribeFactory ..> JugoCorozo : crea
+
+MenuSaludableFactory ..> Ensalada : crea
+MenuSaludableFactory ..> BowlPollo : crea
+MenuSaludableFactory ..> WrapVegetal : crea
+MenuSaludableFactory ..> JugoNatural : crea
+
+Hamburguesa ..|> Plato
+HamburguesaBbq ..|> Plato
+PapasFritas ..|> Plato
+ArepaDeHuevo ..|> Plato
+PataconesConCarne ..|> Plato
+Carimanolas ..|> Plato
+Ensalada ..|> Plato
+BowlPollo ..|> Plato
+WrapVegetal ..|> Plato
+
+Gaseosa ..|> Bebida
+JugoCorozo ..|> Bebida
+JugoNatural ..|> Bebida
+
+' =========================
+' PEDIDOS + BUILDER + FACTORY + PROTOTYPE
+' =========================
+
+PedidoServiceImpl ..|> PedidoService
+PedidoServiceImpl --> PedidoBuilder : utiliza
+PedidoServiceImpl --> PedidoFactory : selecciona
+PedidoServiceImpl --> PedidoPrototype : utiliza
+
+PedidoBuilder ..> Pedido : construye
+
+DomicilioFactory ..|> PedidoFactory
+LocalFactory ..|> PedidoFactory
+DomicilioFactory ..> PedidoDomicilio : crea
+LocalFactory ..> PedidoLocal : crea
+
+PedidoPrototype --> Pedido : clona
+
+PedidoDomicilio --|> Pedido
+PedidoLocal --|> Pedido
+Pedido "1" o-- "*" Producto : contiene
+Pedido "1" --> "1" MetodoPago : utiliza
+CarritoItem --> Producto : referencia
+
+' =========================
+' SINGLETON
+' =========================
+
+QueueGoController --> AppConfig : utiliza
+PedidoBuilder --> AppConfig : consulta tarifa
+
+@enduml

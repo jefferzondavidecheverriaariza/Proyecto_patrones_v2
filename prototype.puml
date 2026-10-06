@@ -1,0 +1,26 @@
+@startuml
+title QueueGo
+skinparam classAttributeIconSize 0
+
+class PedidoPrototype <<Prototype>> {
+  - pedidoOriginal: Pedido
+  + clonar(nuevoId: String, nuevoCliente: String, nuevoMetodoPago: MetodoPago?): Pedido
+}
+
+class Pedido
+class PedidoDomicilio
+class PedidoLocal
+class Producto
+class MetodoPago
+class QueueGoController
+class CarritoItem
+
+QueueGoController --> PedidoPrototype : utiliza
+PedidoPrototype --> Pedido : recibe
+PedidoPrototype ..> Pedido : clona
+PedidoDomicilio --|> Pedido
+PedidoLocal --|> Pedido
+Pedido "1" o-- "*" Producto
+Pedido --> MetodoPago
+QueueGoController --> CarritoItem : agrega productos clonados
+@enduml

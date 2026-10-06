@@ -1,0 +1,23 @@
+@startuml
+title QueueGo 
+skinparam classAttributeIconSize 0
+
+abstract class PedidoFactory <<Factory Method>> {
+  + crearPedido(...): Pedido
+}
+
+class DomicilioFactory
+class LocalFactory
+abstract class Pedido
+class PedidoDomicilio
+class PedidoLocal
+class PedidoServiceImpl
+
+PedidoServiceImpl --> PedidoFactory : selecciona fábrica
+DomicilioFactory ..|> PedidoFactory
+LocalFactory ..|> PedidoFactory
+DomicilioFactory ..> PedidoDomicilio : crea
+LocalFactory ..> PedidoLocal : crea
+PedidoDomicilio --|> Pedido
+PedidoLocal --|> Pedido
+@enduml

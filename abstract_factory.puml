@@ -1,0 +1,86 @@
+@startuml
+title QueueGo 
+skinparam classAttributeIconSize 0
+
+abstract class MenuFactory <<Abstract Factory>> {
+  + crearPlatos(): List<Plato>
+  + crearBebida(): Bebida
+}
+
+class MenuTradicionalFactory
+class MenuCaribeFactory
+class MenuSaludableFactory
+
+interface Plato {
+  + nombre: String
+  + precio: double
+}
+
+interface Bebida {
+  + nombre: String
+  + precio: double
+}
+
+class Hamburguesa
+class HamburguesaBbq
+class PapasFritas
+class ArepaDeHuevo
+class PataconesConCarne
+class Carimanolas
+class Ensalada
+class BowlPollo
+class WrapVegetal
+class Gaseosa
+class JugoCorozo
+class JugoNatural
+
+class Restaurante {
+  + tipoMenu: String
+}
+
+class RestaurantScreen
+class Producto
+class CarritoItem
+
+Restaurante --> RestaurantScreen : proporciona tipoMenu
+RestaurantScreen --> MenuFactory : selecciona fábrica
+
+MenuTradicionalFactory ..|> MenuFactory
+MenuCaribeFactory ..|> MenuFactory
+MenuSaludableFactory ..|> MenuFactory
+
+MenuFactory ..> Plato : crea
+MenuFactory ..> Bebida : crea
+
+MenuTradicionalFactory ..> Hamburguesa : crea
+MenuTradicionalFactory ..> HamburguesaBbq : crea
+MenuTradicionalFactory ..> PapasFritas : crea
+MenuTradicionalFactory ..> Gaseosa : crea
+
+MenuCaribeFactory ..> ArepaDeHuevo : crea
+MenuCaribeFactory ..> PataconesConCarne : crea
+MenuCaribeFactory ..> Carimanolas : crea
+MenuCaribeFactory ..> JugoCorozo : crea
+
+MenuSaludableFactory ..> Ensalada : crea
+MenuSaludableFactory ..> BowlPollo : crea
+MenuSaludableFactory ..> WrapVegetal : crea
+MenuSaludableFactory ..> JugoNatural : crea
+
+Hamburguesa ..|> Plato
+HamburguesaBbq ..|> Plato
+PapasFritas ..|> Plato
+ArepaDeHuevo ..|> Plato
+PataconesConCarne ..|> Plato
+Carimanolas ..|> Plato
+Ensalada ..|> Plato
+BowlPollo ..|> Plato
+WrapVegetal ..|> Plato
+
+Gaseosa ..|> Bebida
+JugoCorozo ..|> Bebida
+JugoNatural ..|> Bebida
+
+RestaurantScreen --> Producto : convierte menú
+Producto --> CarritoItem : puede agregarse
+@enduml

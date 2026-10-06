@@ -1,0 +1,29 @@
+@startuml
+title QueueGo
+skinparam classAttributeIconSize 0
+
+class PedidoBuilder <<Builder>> {
+  - _id: String
+  - _cliente: String
+  - _tipo: String
+  - _costoDomicilio: double
+  - _metodoPago: MetodoPago
+  - _productos: List<Producto>
+  + conId(id: String): PedidoBuilder
+  + conCliente(cliente: String): PedidoBuilder
+  + conTipo(tipo: String): PedidoBuilder
+  + conMetodoPago(metodo: MetodoPago): PedidoBuilder
+  + agregarProducto(producto: Producto): PedidoBuilder
+  + build(): Pedido
+}
+
+class Pedido
+class Producto
+class MetodoPago
+class PedidoServiceImpl
+
+PedidoServiceImpl --> PedidoBuilder : utiliza
+PedidoBuilder --> Pedido : construye
+PedidoBuilder --> Producto : agrega
+PedidoBuilder --> MetodoPago : configura
+@enduml

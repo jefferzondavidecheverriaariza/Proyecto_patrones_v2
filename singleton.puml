@@ -1,0 +1,23 @@
+@startuml
+title QueueGo 
+skinparam classAttributeIconSize 0
+
+class AppConfig <<Singleton>> {
+  - _instance: AppConfig
+  - nombreAplicacion: String
+  - moneda: String
+  - modoPrueba: bool
+  - tarifaDomicilio: double
+  - AppConfig._internal()
+  + AppConfig(): AppConfig
+  + descripcion: String
+}
+
+class QueueGoController
+class PedidoBuilder
+class CartScreen
+
+QueueGoController --> AppConfig : utiliza
+PedidoBuilder --> AppConfig : consulta tarifa
+CartScreen --> AppConfig : consulta tarifa
+@enduml

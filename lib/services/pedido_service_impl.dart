@@ -1,18 +1,14 @@
 import '../models/metodo_pago.dart';
 import '../models/pedido.dart';
 import '../models/producto.dart';
-
-import '../patterns/builder/pedido_builder.dart';
-import '../patterns/factory_method/domicilio_factory.dart';
-import '../patterns/factory_method/local_factory.dart';
-import '../patterns/factory_method/pedido_factory.dart';
-import '../patterns/prototype/pedido_prototype.dart';
-
+import '../patterns/creational/builder/pedido_builder.dart';
+import '../patterns/creational/factory_method/domicilio_factory.dart';
+import '../patterns/creational/factory_method/local_factory.dart';
+import '../patterns/creational/factory_method/pedido_factory.dart';
+import '../patterns/creational/prototype/pedido_prototype.dart';
 import 'pedido_service.dart';
 
 class PedidoServiceImpl implements PedidoService {
- 
-
   @override
   Pedido crearPedido({
     required String id,
@@ -44,7 +40,7 @@ class PedidoServiceImpl implements PedidoService {
       metodoPago: pedidoConstruido.metodoPago,
       costoDomicilio: pedidoConstruido.costoDomicilio,
     );
-  } 
+  }
 
   @override
   Pedido clonarPedido({

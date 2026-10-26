@@ -9,14 +9,6 @@ import 'validador_carrito.dart';
 
 // =====================================================
 // FACADE
-//
-// Interfaz única sobre el subsistema de pedidos:
-// validación, conversión, generación de id y creación
-// (PedidoService, que internamente usa Factory Method,
-// Builder y Prototype).
-//
-// El cliente (QueueGoController) no conoce ninguno de
-// esos subsistemas ni cómo se construye un Pedido.
 // =====================================================
 class CheckoutFacade {
   static const String _errorSesion =
@@ -29,14 +21,11 @@ class CheckoutFacade {
   final GeneradorIdPedido _generadorId;
 
   CheckoutFacade({
-    required PedidoService pedidoService,
-    ValidadorCarrito validador = const ValidadorCarrito(),
-    ConversorCarrito conversor = const ConversorCarrito(),
-    GeneradorIdPedido generadorId = const GeneradorIdPedido(),
-  }) : _pedidoService = pedidoService,
-       _validador = validador,
-       _conversor = conversor,
-       _generadorId = generadorId;
+    required this._pedidoService,
+    required this._validador,
+    required this._conversor,
+    required this._generadorId,
+  });
 
   // ---------------------------------------------------
   // Confirmar pedido

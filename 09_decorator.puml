@@ -1,0 +1,74 @@
+@startuml
+ title QueueGo -  Decorator
+ skinparam classAttributeIconSize 0
+ skinparam linetype ortho
+
+ package "patterns/creational/abstract_factory" {
+   interface Plato <<Component>> {
+     +nombre: String
+     +precio: double
+   }
+   class Hamburguesa <<ConcreteComponent>>
+   class Ensalada <<ConcreteComponent>>
+   Hamburguesa ..|> Plato
+   Ensalada ..|> Plato
+ }
+
+ package "patterns/structural/decorator" {
+   abstract class PlatoDecorator <<Decorator>> {
+     #plato: Plato
+     +nombre: String
+     +precio: double
+   }
+
+   class QuesoExtraDecorator <<ConcreteDecorator>> {
+     {static} +costo: double = 3000
+     +nombre: String
+     +precio: double
+   }
+   class TocinetaExtraDecorator <<ConcreteDecorator>> {
+     {static} +costo: double = 4500
+     +nombre: String
+     +precio: double
+   }
+   class SalsaEspecialDecorator <<ConcreteDecorator>> {
+     {static} +costo: double = 1500
+     +nombre: String
+     +precio: double
+   }
+   class EmpaqueEcologicoDecorator <<ConcreteDecorator>> {
+     {static} +costo: double = 1000
+     +nombre: String
+     +precio: double
+   }
+
+   enum TipoExtra {
+     quesoExtra
+     tocineta
+     salsaEspecial
+     empaqueEcologico
+     +etiqueta: String
+     +costo: double
+     +decorar(plato): Plato
+   }
+
+   class PlatoPersonalizador {
+     {static} +aplicar(base, extras): Plato
+   }
+ }
+
+ PlatoDecorator ..|> Plato
+ PlatoDecorator o--> Plato : envuelve
+ QuesoExtraDecorator --|> PlatoDecorator
+ TocinetaExtraDecorator --|> PlatoDecorator
+ SalsaEspecialDecorator --|> PlatoDecorator
+ EmpaqueEcologicoDecorator --|> PlatoDecorator
+
+ TipoExtra ..> QuesoExtraDecorator : crea
+ TipoExtra ..> TocinetaExtraDecorator : crea
+ TipoExtra ..> SalsaEspecialDecorator : crea
+ TipoExtra ..> EmpaqueEcologicoDecorator : crea
+ PlatoPersonalizador ..> TipoExtra : aplica selección
+ PlatoPersonalizador ..> Plato : recibe / devuelve
+
+@enduml

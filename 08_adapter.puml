@@ -1,0 +1,42 @@
+@startuml
+ title QueueGo - Adapter
+ skinparam classAttributeIconSize 0
+ skinparam linetype ortho
+
+ package "Modelos existentes" {
+   class Producto <<Target>> {
+     +id: String
+     +nombre: String
+     +precio: double
+     +descripcion: String
+     +categoria: String
+   }
+
+   interface Plato <<Adaptee>> {
+     +nombre: String
+     +precio: double
+   }
+
+   interface Bebida <<Adaptee>> {
+     +nombre: String
+     +precio: double
+   }
+ }
+
+ package "patterns/structural/adapter" {
+   class PlatoProductoAdapter <<Adapter>> {
+     +plato: Plato
+     +PlatoProductoAdapter(plato, restauranteId)
+   }
+
+   class BebidaProductoAdapter <<Adapter>> {
+     +BebidaProductoAdapter(bebida, restauranteId)
+   }
+ }
+
+ PlatoProductoAdapter --|> Producto
+ BebidaProductoAdapter --|> Producto
+ PlatoProductoAdapter ..> Plato : adapta
+ BebidaProductoAdapter ..> Bebida : adapta
+
+@enduml

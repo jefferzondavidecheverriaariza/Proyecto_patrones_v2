@@ -1,0 +1,66 @@
+@startuml
+ title QueueGo - Facade 
+ 
+ skinparam classAttributeIconSize 0
+ skinparam linetype ortho
+
+ class QueueGoController <<Cliente previsto>>
+
+ package "patterns/structural/facade" {
+   class CheckoutFacade <<Facade>> {
+     -pedidoService: PedidoService
+     -validador: ValidadorCarrito
+     -conversor: ConversorCarrito
+     -generadorId: GeneradorIdPedido
+     +confirmarPedido(carrito, cliente, tipoEntrega, metodoPago): ResultadoCheckout
+     +repetirPedido(original, cliente): List<CarritoItem>?
+   }
+
+   class ValidadorCarrito <<Subsystem>> {
+     +validar(carrito): String?
+   }
+   class ConversorCarrito <<Subsystem>> {
+     +aProductos(carrito): List<Producto>
+     +desdeProductos(productos): List<CarritoItem>
+   }
+   class GeneradorIdPedido <<Subsystem>> {
+     +generar(): String
+   }
+   class ResultadoCheckout <<Result>> {
+     +pedido: Pedido?
+     +error: String?
+     +exitoso: bool
+   }
+ }
+
+ package "services" {
+   interface PedidoService {
+     +crearPedido(...): Pedido
+     +clonarPedido(...): Pedido
+   }
+   class PedidoServiceImpl
+   PedidoServiceImpl ..|> PedidoService
+ }
+
+ package "models" {
+   class CarritoItem
+   class Producto
+   class Pedido
+   enum MetodoPago
+ }
+
+ QueueGoController ..> CheckoutFacade : usa (integración prevista)
+ CheckoutFacade --> ValidadorCarrito : valida
+ CheckoutFacade --> ConversorCarrito : convierte
+ CheckoutFacade --> GeneradorIdPedido : genera ID
+ CheckoutFacade --> PedidoService : crea / clona pedido
+ CheckoutFacade ..> ResultadoCheckout : devuelve
+ ValidadorCarrito ..> CarritoItem
+ ConversorCarrito ..> CarritoItem
+ ConversorCarrito ..> Producto
+ GeneradorIdPedido ..> Pedido : identifica
+ PedidoService ..> Pedido
+ PedidoService ..> MetodoPago
+
+
+@enduml

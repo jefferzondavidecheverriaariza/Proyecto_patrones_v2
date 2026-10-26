@@ -2,10 +2,7 @@ import '../../../models/carrito_item.dart';
 import '../../../models/producto.dart';
 
 // =====================================================
-// FACADE - SUBSISTEMA
-// Conversión entre carrito (con cantidades) y lista
-// plana de productos. Centraliza la lógica de agrupar
-// por producto.id que antes estaba duplicada.
+// FACADE 
 // =====================================================
 class ConversorCarrito {
   const ConversorCarrito();

@@ -1,0 +1,48 @@
+@startuml
+ title QueueGo - Adapter - ANTES 
+ skinparam classAttributeIconSize 0
+ skinparam linetype ortho
+
+ package "Pantallas / cliente" {
+   class RestaurantScreen {
+     +seleccionarPlato(plato: Plato)
+     +seleccionarBebida(bebida: Bebida)
+   }
+   class QueueGoController {
+     +agregarAlCarrito(producto: Producto)
+   }
+ }
+
+ package "Modelos de menú" {
+   interface Plato {
+     +nombre: String
+     +precio: double
+   }
+   interface Bebida {
+     +nombre: String
+     +precio: double
+   }
+ }
+
+ package "Modelo del carrito" {
+   class Producto {
+     +id: String
+     +nombre: String
+     +precio: double
+     +descripcion: String
+     +categoria: String
+   }
+   class CarritoItem {
+     +producto: Producto
+     +cantidad: int
+   }
+ }
+
+ RestaurantScreen ..> Plato : recibe
+ RestaurantScreen ..> Bebida : recibe
+ RestaurantScreen ..> Producto : crea manualmente
+ RestaurantScreen ..> QueueGoController : envía Producto
+ QueueGoController --> CarritoItem : agrega
+ CarritoItem --> Producto
+
+@enduml

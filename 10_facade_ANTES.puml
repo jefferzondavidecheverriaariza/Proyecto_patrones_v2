@@ -1,0 +1,46 @@
+@startuml
+ title QueueGo - Facade - ANTES 
+ skinparam classAttributeIconSize 0
+ skinparam linetype ortho
+
+ class QueueGoController <<Cliente y coordinador>> {
+   +confirmarPedido(carrito, cliente, tipoEntrega, metodoPago)
+ }
+ class ValidadorCarrito {
+   +validar(carrito): String?
+ }
+ class ConversorCarrito {
+   +aProductos(carrito): List<Producto>
+ }
+ class GeneradorIdPedido {
+   +generar(): String
+ }
+ interface PedidoService {
+   +crearPedido(...): Pedido
+ }
+ class PedidoServiceImpl
+ class PedidoBuilder
+ interface PedidoFactory
+ class DomicilioFactory
+ class LocalFactory
+ class CarritoItem
+ class Producto
+ class Pedido
+
+ PedidoServiceImpl ..|> PedidoService
+ DomicilioFactory ..|> PedidoFactory
+ LocalFactory ..|> PedidoFactory
+ QueueGoController ..> ValidadorCarrito : valida directamente
+ QueueGoController ..> ConversorCarrito : convierte directamente
+ QueueGoController ..> GeneradorIdPedido : genera ID
+ QueueGoController ..> PedidoService : coordina creación
+ QueueGoController ..> PedidoBuilder : construye pedido
+ QueueGoController ..> PedidoFactory : selecciona fábrica
+ ValidadorCarrito ..> CarritoItem
+ ConversorCarrito ..> Producto
+ PedidoService ..> Pedido
+ PedidoBuilder ..> Pedido
+ PedidoFactory ..> Pedido
+
+ 
+@enduml

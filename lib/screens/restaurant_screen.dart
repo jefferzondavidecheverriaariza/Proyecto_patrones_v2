@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import '../models/carrito_item.dart';
 import '../models/producto.dart';
 import '../models/restaurante.dart';
-
-import '../patterns/abstract_factory/menu_factory.dart';
-import '../patterns/abstract_factory/menu_caribe_factory.dart';
-import '../patterns/abstract_factory/menu_saludable_factory.dart';
-import '../patterns/abstract_factory/menu_tradicional_factory.dart';
+import '../patterns/creational/abstract_factory/menu_factory.dart';
+import '../patterns/creational/abstract_factory/menu_caribe_factory.dart';
+import '../patterns/creational/abstract_factory/menu_saludable_factory.dart';
+import '../patterns/creational/abstract_factory/menu_tradicional_factory.dart';
 
 class RestaurantScreen extends StatelessWidget {
   final Restaurante restaurante;

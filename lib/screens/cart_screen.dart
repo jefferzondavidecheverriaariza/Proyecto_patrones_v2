@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/carrito_item.dart';
 import '../models/metodo_pago.dart';
 import '../models/pedido.dart';
-import '../patterns/singleton/app_config.dart';
+import '../patterns/creational/singleton/app_config.dart';
 
 class CartScreen extends StatefulWidget {
   final List<CarritoItem> carrito;
@@ -25,8 +25,6 @@ class _CartScreenState extends State<CartScreen> {
 
   MetodoPago metodoPago = MetodoPago.efectivo;
 
-
-
   double get subtotal {
     return widget.carrito.fold(0, (total, item) => total + item.subtotal);
   }
@@ -39,12 +37,9 @@ class _CartScreenState extends State<CartScreen> {
     return subtotal + domicilio;
   }
 
-
-
   String formatoPrecio(double valor) {
     return '\$${valor.toStringAsFixed(0)}';
   }
-
 
   void confirmarPedido() {
     if (widget.carrito.isEmpty) {
@@ -68,7 +63,6 @@ class _CartScreenState extends State<CartScreen> {
     Navigator.pop(context, true);
   }
 
-
   @override
   Widget build(BuildContext context) {
     final appConfig = AppConfig();
@@ -85,7 +79,6 @@ class _CartScreenState extends State<CartScreen> {
           : _buildCarrito(appConfig),
     );
   }
-
 
   Widget _buildCarritoVacio() {
     return Center(
@@ -122,7 +115,6 @@ class _CartScreenState extends State<CartScreen> {
       ),
     );
   }
-
 
   Widget _buildCarrito(AppConfig appConfig) {
     return ListView(
@@ -168,8 +160,6 @@ class _CartScreenState extends State<CartScreen> {
       ],
     );
   }
-
-
 
   Widget _buildProducto(CarritoItem item) {
     return Card(
@@ -254,7 +244,6 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-
   Widget _buildTipoEntrega() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,8 +295,6 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-
-
   Widget _buildMetodoPago() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -353,7 +340,6 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-
   Icon _iconoMetodoPago(TipoMetodoPago tipo) {
     switch (tipo) {
       case TipoMetodoPago.efectivo:
@@ -366,7 +352,6 @@ class _CartScreenState extends State<CartScreen> {
         return const Icon(Icons.account_balance_wallet_outlined);
     }
   }
-
 
   Widget _buildResumen(AppConfig appConfig) {
     return Card(

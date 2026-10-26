@@ -1,0 +1,30 @@
+@startuml
+ title QueueGo - Decorator - ANTES 
+ skinparam classAttributeIconSize 0
+ skinparam linetype ortho
+
+ package "Menú" {
+   interface Plato {
+     +nombre: String
+     +precio: double
+   }
+   class Hamburguesa
+   class Ensalada
+   Hamburguesa ..|> Plato
+   Ensalada ..|> Plato
+ }
+
+ class PersonalizadorPlato <<lógica condicional>> {
+   +aplicarExtras(plato, queso, tocineta, salsa, empaque): PlatoPersonalizado
+ }
+ class PlatoPersonalizado {
+   +nombre: String
+   +precio: double
+ }
+ class RestaurantScreen
+
+ RestaurantScreen ..> PersonalizadorPlato : solicita personalización
+ PersonalizadorPlato ..> Plato : consulta datos
+ PersonalizadorPlato ..> PlatoPersonalizado : construye resultado
+
+@enduml

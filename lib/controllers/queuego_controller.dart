@@ -6,7 +6,7 @@ import '../models/pedido.dart';
 import '../models/producto.dart';
 import '../models/restaurante.dart';
 
-import '../patterns/singleton/app_config.dart';
+import '../patterns/creational/singleton/app_config.dart';
 
 import '../services/pedido_service.dart';
 import '../services/pedido_service_impl.dart';

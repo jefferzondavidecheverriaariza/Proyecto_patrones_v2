@@ -53,36 +53,9 @@ Funcionalidades en desarrollo
 
 
 screens -> repositories (interfaces) -> services (implementaciones)
-   
-
+ 
 
 Los modelos se mantienen separados de la lógica de acceso a datos.
-
-Configuración
-
-Crear un archivo `.env` en la raíz:
-
-SUPABASE_URL=tu_url
-SUPABASE_PUBLISHABLE_KEY=tu_publishable_key
-
-No publicar el `.env` real en GitHub.
-
-El repositorio debe incluir un `.env.example` sin valores sensibles.
-
-Ejecución
-
-
-flutter pub get
-flutter run -d chrome
-
-
-Para validar el proyecto:
-
-flutter analyze
-
-Supabase
-
-El proyecto utiliza las tablas:
 
 
 profiles
@@ -93,8 +66,6 @@ order_items
 deliveries
 
 
-RLS debe mantenerse habilitado y las políticas deben limitar el acceso según el rol y/o usuario correspondiente.
-
 SOLID aplicado
 
 **SRP:** separación entre modelos, repositorios, servicios, pantallas y dashboards.
@@ -102,10 +73,6 @@ SOLID aplicado
 **DIP:** la UI trabaja contra `AuthRepository` y `RestaurantRepository`.
 **ISP:** interfaces pequeñas y específicas.
 **LSP:** no se fuerza una jerarquía de herencia donde no existe una necesidad real.
-
-Segunda entrega
-
-La segunda entrega realiza una revisión crítica de la implementación inicial y registra los cambios en `docs/control_cambios.md`.
 
 Cambios principales:
 

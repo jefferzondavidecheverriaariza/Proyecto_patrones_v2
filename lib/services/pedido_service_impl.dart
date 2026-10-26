@@ -11,9 +11,7 @@ import '../patterns/prototype/pedido_prototype.dart';
 import 'pedido_service.dart';
 
 class PedidoServiceImpl implements PedidoService {
-  // =====================================================
-  // CREAR PEDIDO
-  // =====================================================
+ 
 
   @override
   Pedido crearPedido({
@@ -46,11 +44,7 @@ class PedidoServiceImpl implements PedidoService {
       metodoPago: pedidoConstruido.metodoPago,
       costoDomicilio: pedidoConstruido.costoDomicilio,
     );
-  }
-
-  // =====================================================
-  // CLONAR PEDIDO
-  // =====================================================
+  } 
 
   @override
   Pedido clonarPedido({

@@ -26,12 +26,6 @@ class RestaurantScreen extends StatelessWidget {
     required this.onOpenCart,
   });
 
-  // =====================================================
-  // ABSTRACT FACTORY
-  //
-  // Seleccionamos la fábrica correspondiente al
-  // restaurante.
-  // =====================================================
 
   MenuFactory obtenerFactory() {
     switch (restaurante.tipoMenu) {
@@ -46,9 +40,7 @@ class RestaurantScreen extends StatelessWidget {
     }
   }
 
-  // =====================================================
-  // PRODUCTOS DEL RESTAURANTE
-  // =====================================================
+
 
   List<Producto> obtenerProductos() {
     final factory = obtenerFactory();
@@ -83,10 +75,6 @@ class RestaurantScreen extends StatelessWidget {
     return productos;
   }
 
-  // =====================================================
-  // ICONOS
-  // =====================================================
-
   IconData obtenerIcono(Producto producto) {
     if (producto.categoria == 'Bebida') {
       return Icons.local_drink_outlined;
@@ -104,25 +92,16 @@ class RestaurantScreen extends StatelessWidget {
     }
   }
 
-  // =====================================================
-  // CANTIDAD DEL CARRITO
-  // =====================================================
+
 
   int get cantidadCarrito {
     return carrito.fold(0, (total, item) => total + item.cantidad);
   }
 
-  // =====================================================
-  // TOTAL DEL CARRITO
-  // =====================================================
-
   double get totalCarrito {
     return carrito.fold(0, (total, item) => total + item.subtotal);
   }
 
-  // =====================================================
-  // INTERFAZ
-  // =====================================================
 
   @override
   Widget build(BuildContext context) {
@@ -139,9 +118,7 @@ class RestaurantScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
         children: [
-          // =================================================
-          // ENCABEZADO
-          // =================================================
+   
           Container(
             height: 180,
             decoration: BoxDecoration(
@@ -201,9 +178,7 @@ class RestaurantScreen extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // =================================================
-          // PRODUCTOS
-          // =================================================
+
           ...productos.map((producto) {
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
@@ -294,9 +269,7 @@ class RestaurantScreen extends StatelessWidget {
         ],
       ),
 
-      // =====================================================
-      // CARRITO FLOTANTE
-      // =====================================================
+
       floatingActionButton: cantidadCarrito > 0
           ? FloatingActionButton.extended(
               onPressed: onOpenCart,

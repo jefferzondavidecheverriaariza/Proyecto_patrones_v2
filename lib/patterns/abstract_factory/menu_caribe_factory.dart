@@ -3,11 +3,7 @@ import 'menu_factory.dart';
 import 'plato.dart';
 
 class MenuCaribeFactory implements MenuFactory {
-  // =====================================================
-  // ABSTRACT FACTORY - CONCRETE FACTORY
-  //
-  // Familia de productos de comida caribeña.
-  // =====================================================
+
 
   @override
   List<Plato> crearPlatos() {
@@ -19,10 +15,6 @@ class MenuCaribeFactory implements MenuFactory {
     return JugoCorozo();
   }
 }
-
-// =====================================================
-// PRODUCTOS CONCRETOS DEL MENÚ CARIBE
-// =====================================================
 
 class ArepaDeHuevo implements Plato {
   @override

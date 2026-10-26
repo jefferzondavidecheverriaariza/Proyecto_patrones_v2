@@ -3,9 +3,6 @@ import '../../models/pedido.dart';
 import '../../models/producto.dart';
 
 abstract class PedidoFactory {
-  // =====================================================
-  // FACTORY METHOD
-  // =====================================================
 
   Pedido crearPedido({
     required String id,

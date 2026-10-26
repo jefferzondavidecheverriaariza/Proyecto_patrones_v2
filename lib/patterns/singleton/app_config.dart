@@ -1,9 +1,4 @@
 class AppConfig {
-  // =====================================================
-  // SINGLETON
-  //
-  // Solo existe una instancia de esta configuración.
-  // =====================================================
 
   static final AppConfig _instance = AppConfig._internal();
 
@@ -12,10 +7,6 @@ class AppConfig {
   factory AppConfig() {
     return _instance;
   }
-
-  // =====================================================
-  // CONFIGURACIÓN GLOBAL
-  // =====================================================
 
   String nombreAplicacion = 'QueueGo';
 

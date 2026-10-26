@@ -5,12 +5,6 @@ import 'menu_factory.dart';
 import 'plato.dart';
 
 class MenuTradicionalFactory implements MenuFactory {
-  // =====================================================
-  // ABSTRACT FACTORY - CONCRETE FACTORY
-  //
-  // Familia de productos para restaurantes
-  // de comida tradicional.
-  // =====================================================
 
   @override
   List<Plato> crearPlatos() {
@@ -23,9 +17,6 @@ class MenuTradicionalFactory implements MenuFactory {
   }
 }
 
-// =====================================================
-// PRODUCTOS CONCRETOS DEL MENÚ TRADICIONAL
-// =====================================================
 
 class HamburguesaBbq implements Plato {
   @override

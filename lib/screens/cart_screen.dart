@@ -25,9 +25,7 @@ class _CartScreenState extends State<CartScreen> {
 
   MetodoPago metodoPago = MetodoPago.efectivo;
 
-  // =====================================================
-  // TOTALES
-  // =====================================================
+
 
   double get subtotal {
     return widget.carrito.fold(0, (total, item) => total + item.subtotal);
@@ -41,17 +39,12 @@ class _CartScreenState extends State<CartScreen> {
     return subtotal + domicilio;
   }
 
-  // =====================================================
-  // FORMATO DE MONEDA
-  // =====================================================
+
 
   String formatoPrecio(double valor) {
     return '\$${valor.toStringAsFixed(0)}';
   }
 
-  // =====================================================
-  // CONFIRMAR PEDIDO
-  // =====================================================
 
   void confirmarPedido() {
     if (widget.carrito.isEmpty) {
@@ -75,9 +68,6 @@ class _CartScreenState extends State<CartScreen> {
     Navigator.pop(context, true);
   }
 
-  // =====================================================
-  // BUILD
-  // =====================================================
 
   @override
   Widget build(BuildContext context) {
@@ -96,9 +86,6 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  // =====================================================
-  // CARRITO VACÍO
-  // =====================================================
 
   Widget _buildCarritoVacio() {
     return Center(
@@ -136,9 +123,6 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  // =====================================================
-  // CONTENIDO DEL CARRITO
-  // =====================================================
 
   Widget _buildCarrito(AppConfig appConfig) {
     return ListView(
@@ -185,9 +169,7 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  // =====================================================
-  // PRODUCTO
-  // =====================================================
+
 
   Widget _buildProducto(CarritoItem item) {
     return Card(
@@ -272,9 +254,6 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  // =====================================================
-  // TIPO DE ENTREGA
-  // =====================================================
 
   Widget _buildTipoEntrega() {
     return Column(
@@ -327,9 +306,7 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  // =====================================================
-  // MÉTODO DE PAGO
-  // =====================================================
+
 
   Widget _buildMetodoPago() {
     return Column(
@@ -376,9 +353,6 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  // =====================================================
-  // ICONO MÉTODO DE PAGO
-  // =====================================================
 
   Icon _iconoMetodoPago(TipoMetodoPago tipo) {
     switch (tipo) {
@@ -393,9 +367,6 @@ class _CartScreenState extends State<CartScreen> {
     }
   }
 
-  // =====================================================
-  // RESUMEN
-  // =====================================================
 
   Widget _buildResumen(AppConfig appConfig) {
     return Card(
@@ -448,10 +419,6 @@ class _CartScreenState extends State<CartScreen> {
       ),
     );
   }
-
-  // =====================================================
-  // FILA DEL RESUMEN
-  // =====================================================
 
   Widget _filaResumen(String titulo, double valor) {
     return Row(

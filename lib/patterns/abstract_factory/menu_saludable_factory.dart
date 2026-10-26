@@ -5,11 +5,6 @@ import 'menu_factory.dart';
 import 'plato.dart';
 
 class MenuSaludableFactory implements MenuFactory {
-  // =====================================================
-  // ABSTRACT FACTORY - CONCRETE FACTORY
-  //
-  // Familia de productos saludables.
-  // =====================================================
 
   @override
   List<Plato> crearPlatos() {
@@ -22,9 +17,6 @@ class MenuSaludableFactory implements MenuFactory {
   }
 }
 
-// =====================================================
-// PRODUCTOS CONCRETOS DEL MENÚ SALUDABLE
-// =====================================================
 
 class BowlPollo implements Plato {
   @override

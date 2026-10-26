@@ -13,10 +13,6 @@ class PedidoBuilder {
 
   final List<Producto> _productos = [];
 
-  // =====================================================
-  // BUILDER
-  // =====================================================
-
   PedidoBuilder conId(String id) {
     _id = id;
     return this;

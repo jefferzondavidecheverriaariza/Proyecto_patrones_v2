@@ -1,4 +1,6 @@
 import 'bebida.dart';
+import 'combo_menu.dart';
+import 'opcion_bebida.dart';
 import 'plato.dart';
 
 abstract class MenuFactory {
@@ -12,4 +14,8 @@ abstract class MenuFactory {
   List<Plato> crearPlatos();
 
   Bebida crearBebida();
+
+  List<OpcionBebida> crearOpcionesBebida();
+
+  List<ComboMenu> crearCombos();
 }

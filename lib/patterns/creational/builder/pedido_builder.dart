@@ -8,6 +8,7 @@ class PedidoBuilder {
   String _id = '';
   String _cliente = '';
   String _tipo = 'Para llevar';
+  String? _direccionEntrega;
   double _costoDomicilio = 0.0;
   MetodoPago _metodoPago = MetodoPago.efectivo;
   final List<Producto> _productos = [];
@@ -30,6 +31,11 @@ class PedidoBuilder {
     _costoDomicilio = (tipo.toLowerCase() == 'domicilio')
         ? AppConfig().tarifaDomicilio
         : 0.0;
+    return this;
+  }
+
+  PedidoBuilder conDireccionEntrega(String? direccion) {
+    _direccionEntrega = direccion?.trim();
     return this;
   }
 
@@ -70,6 +76,7 @@ class PedidoBuilder {
       cliente: _cliente,
       productos: List.unmodifiable(_productos),
       tipo: _tipo,
+      direccionEntrega: _direccionEntrega,
       metodoPago: _metodoPago,
       costoDomicilio: _costoDomicilio,
     );

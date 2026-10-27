@@ -16,12 +16,14 @@ class PedidoServiceImpl implements PedidoService {
     required List<Producto> productos,
     required String tipoEntrega,
     required MetodoPago metodoPago,
+    String? direccionEntrega,
   }) {
     final builder = PedidoBuilder()
       ..conId(id)
       ..conCliente(cliente)
       ..conTipo(tipoEntrega)
       ..conMetodoPago(metodoPago);
+    builder.conDireccionEntrega(direccionEntrega);
 
     for (final producto in productos) {
       builder.agregarProducto(producto);
@@ -38,6 +40,7 @@ class PedidoServiceImpl implements PedidoService {
       cliente: pedidoConstruido.cliente,
       productos: pedidoConstruido.productos,
       metodoPago: pedidoConstruido.metodoPago,
+      direccionEntrega: pedidoConstruido.direccionEntrega,
       costoDomicilio: pedidoConstruido.costoDomicilio,
     );
   }

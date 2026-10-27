@@ -1,45 +1,142 @@
 import '../../creational/abstract_factory/plato.dart';
 import 'extras_decorators.dart';
 
-// =====================================================
-// DECORATOR - CATÁLOGO DE EXTRAS
-//
-// Relaciona cada extra disponible con su decorador.
-// Agregar un extra nuevo = una entrada aquí + un
-// ConcreteDecorator. Nada más cambia (OCP).
-// =====================================================
 enum TipoExtra {
-  quesoExtra('Queso extra', QuesoExtraDecorator.costo, QuesoExtraDecorator.new),
-  tocineta(
+  quesoExtra(
+    'Queso extra',
+    QuesoExtraDecorator.costo,
+    QuesoExtraDecorator.new,
+    'tradicional',
+    'hamburguesa',
+  ),
+  tocinetaHamburguesa(
     'Tocineta',
     TocinetaExtraDecorator.costo,
     TocinetaExtraDecorator.new,
+    'tradicional',
+    'hamburguesa',
   ),
   salsaEspecial(
     'Salsa especial',
     SalsaEspecialDecorator.costo,
     SalsaEspecialDecorator.new,
+    'tradicional',
+    'hamburguesa',
+  ),
+  carneHamburguesa(
+    'Carne adicional',
+    CarneHamburguesaDecorator.costo,
+    CarneHamburguesaDecorator.new,
+    'tradicional',
+    'hamburguesa',
+  ),
+  quesoCheddar(
+    'Queso cheddar',
+    QuesoCheddarDecorator.costo,
+    QuesoCheddarDecorator.new,
+    'tradicional',
+    'papas',
+  ),
+  tocinetaPapas(
+    'Tocineta',
+    TocinetaPapasDecorator.costo,
+    TocinetaPapasDecorator.new,
+    'tradicional',
+    'papas',
+  ),
+  salsaPapas(
+    'Salsa especial',
+    SalsaEspecialDecorator.costo,
+    SalsaEspecialDecorator.new,
+    'tradicional',
+    'papas',
+  ),
+  quesoCosteno(
+    'Queso costeño',
+    QuesoCostenoDecorator.costo,
+    QuesoCostenoDecorator.new,
+    'caribe',
+    'patacones',
+  ),
+  sueroCosteno(
+    'Suero costeño',
+    SueroCostenoDecorator.costo,
+    SueroCostenoDecorator.new,
+    'caribe',
+    'patacones',
+  ),
+  carnePatacones(
+    'Carne adicional',
+    CarnePataconesDecorator.costo,
+    CarnePataconesDecorator.new,
+    'caribe',
+    'patacones',
+  ),
+  aguacate(
+    'Aguacate',
+    AguacateDecorator.costo,
+    AguacateDecorator.new,
+    'saludable',
+    '',
+  ),
+  polloAdicional(
+    'Pollo adicional',
+    PolloAdicionalDecorator.costo,
+    PolloAdicionalDecorator.new,
+    'saludable',
+    '',
+  ),
+  aderezo(
+    'Aderezo',
+    AderezoDecorator.costo,
+    AderezoDecorator.new,
+    'saludable',
+    '',
   ),
   empaqueEcologico(
     'Empaque ecológico',
     EmpaqueEcologicoDecorator.costo,
     EmpaqueEcologicoDecorator.new,
+    '',
+    '',
+    visibleEnMenu: false,
   );
 
   final String etiqueta;
   final double costo;
   final Plato Function(Plato) _crear;
+  final String tipoMenu;
+  final String nombrePlato;
+  final bool visibleEnMenu;
 
-  const TipoExtra(this.etiqueta, this.costo, this._crear);
+  const TipoExtra(
+    this.etiqueta,
+    this.costo,
+    this._crear,
+    this.tipoMenu,
+    this.nombrePlato, {
+    this.visibleEnMenu = true,
+  });
 
   Plato decorar(Plato plato) => _crear(plato);
+
+  static List<TipoExtra> disponiblesPara({
+    required String tipoMenu,
+    required String nombrePlato,
+  }) {
+    final menu = tipoMenu.toLowerCase();
+    final plato = nombrePlato.toLowerCase();
+    return TipoExtra.values
+        .where(
+          (extra) =>
+              extra.visibleEnMenu &&
+              extra.tipoMenu == menu &&
+              (extra.nombrePlato.isEmpty || plato.contains(extra.nombrePlato)),
+        )
+        .toList(growable: false);
+  }
 }
 
-// =====================================================
-// Aplica los extras elegidos en orden determinista,
-// para que la misma selección siempre produzca el
-// mismo nombre (y por tanto el mismo id en el carrito).
-// =====================================================
 class PlatoPersonalizador {
   const PlatoPersonalizador._();
 

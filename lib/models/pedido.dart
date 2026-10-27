@@ -6,6 +6,7 @@ class Pedido {
   final String cliente;
   final List<Producto> productos;
   final String tipo;
+  final String? direccionEntrega;
   final MetodoPago metodoPago;
   final double costoDomicilio;
   final DateTime fecha;
@@ -15,6 +16,7 @@ class Pedido {
     required this.cliente,
     required this.productos,
     required this.tipo,
+    this.direccionEntrega,
     required this.metodoPago,
     this.costoDomicilio = 0,
     DateTime? fecha,

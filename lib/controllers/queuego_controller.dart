@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../models/carrito_item.dart';
+import '../models/direccion_entrega.dart';
 import '../models/metodo_pago.dart';
 import '../models/pedido.dart';
 import '../models/producto.dart';
@@ -10,8 +11,19 @@ import '../patterns/creational/singleton/app_config.dart';
 
 import '../services/pedido_service.dart';
 import '../services/pedido_service_impl.dart';
+import '../services/direccion_repository.dart';
+import '../services/local_direccion_repository.dart';
+import '../patterns/structural/facade/checkout_facade.dart';
+import '../patterns/structural/facade/conversor_carrito.dart';
+import '../patterns/structural/facade/generador_id_pedido.dart';
+import '../patterns/structural/facade/validador_carrito.dart';
 
 class QueueGoController extends ChangeNotifier {
+  QueueGoController({DireccionRepository? direccionRepository})
+    : _direccionRepository = direccionRepository ?? LocalDireccionRepository();
+
+  final DireccionRepository _direccionRepository;
+
   // =====================================================
   // CONFIGURACIÓN
   // =====================================================
@@ -24,6 +36,13 @@ class QueueGoController extends ChangeNotifier {
 
   final PedidoService pedidoService = PedidoServiceImpl();
 
+  late final CheckoutFacade checkoutFacade = CheckoutFacade(
+    pedidoService: pedidoService,
+    validador: const ValidadorCarrito(),
+    conversor: const ConversorCarrito(),
+    generadorId: const GeneradorIdPedido(),
+  );
+
   // =====================================================
   // SESIÓN
   // =====================================================
@@ -31,6 +50,11 @@ class QueueGoController extends ChangeNotifier {
   String? usuarioActual;
 
   bool get sesionIniciada => usuarioActual != null;
+
+  final List<DireccionEntrega> direcciones = [];
+  bool cargandoDirecciones = false;
+  String? errorDirecciones;
+  int _versionCargaDirecciones = 0;
 
   // =====================================================
   // CARRITO
@@ -93,9 +117,93 @@ class QueueGoController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> cargarDirecciones() async {
+    final usuario = usuarioActual;
+    if (usuario == null) return;
+
+    final versionSolicitud = ++_versionCargaDirecciones;
+    cargandoDirecciones = true;
+    errorDirecciones = null;
+    notifyListeners();
+    try {
+      final cargadas = await _direccionRepository.listar(usuario);
+      if (usuarioActual != usuario ||
+          versionSolicitud != _versionCargaDirecciones) {
+        return;
+      }
+      direcciones
+        ..clear()
+        ..addAll(cargadas);
+    } on Exception catch (error, stackTrace) {
+      if (usuarioActual != usuario ||
+          versionSolicitud != _versionCargaDirecciones) {
+        return;
+      }
+      errorDirecciones = 'No se pudieron cargar las direcciones guardadas.';
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stackTrace,
+          library: 'QueueGo',
+          context: ErrorDescription('al cargar las direcciones guardadas'),
+        ),
+      );
+    } finally {
+      if (versionSolicitud == _versionCargaDirecciones) {
+        cargandoDirecciones = false;
+        notifyListeners();
+      }
+    }
+  }
+
+  Future<List<DireccionEntrega>> recargarDirecciones() async {
+    await cargarDirecciones();
+    if (errorDirecciones != null) {
+      throw StateError(errorDirecciones!);
+    }
+    return List.unmodifiable(direcciones);
+  }
+
+  Future<List<DireccionEntrega>> guardarDireccion(
+    DireccionEntrega direccion,
+  ) async {
+    final usuario = usuarioActual;
+    if (usuario == null) {
+      throw StateError('Inicia sesión para guardar una dirección.');
+    }
+
+    await _direccionRepository.guardar(usuario, direccion);
+    await _actualizarDirecciones(usuario);
+    return List.unmodifiable(direcciones);
+  }
+
+  Future<List<DireccionEntrega>> eliminarDireccion(String direccionId) async {
+    final usuario = usuarioActual;
+    if (usuario == null) {
+      throw StateError('Inicia sesión para eliminar una dirección.');
+    }
+
+    await _direccionRepository.eliminar(usuario, direccionId);
+    await _actualizarDirecciones(usuario);
+    return List.unmodifiable(direcciones);
+  }
+
+  Future<void> _actualizarDirecciones(String usuario) async {
+    final actualizadas = await _direccionRepository.listar(usuario);
+    if (usuarioActual != usuario) return;
+    direcciones
+      ..clear()
+      ..addAll(actualizadas);
+    notifyListeners();
+  }
+
   void cerrarSesion() {
     usuarioActual = null;
     carrito.clear();
+    direcciones.clear();
+    errorDirecciones = null;
+    cargandoDirecciones = false;
+    _versionCargaDirecciones++;
 
     notifyListeners();
   }
@@ -162,35 +270,23 @@ class QueueGoController extends ChangeNotifier {
   // FINALIZAR PEDIDO
   // =====================================================
 
-  Pedido? finalizarPedido(String tipoEntrega, MetodoPago metodoPago) {
-    if (carrito.isEmpty || usuarioActual == null) {
-      return null;
-    }
-
-    final productos = <Producto>[];
-
-    for (final item in carrito) {
-      for (int i = 0; i < item.cantidad; i++) {
-        productos.add(item.producto);
-      }
-    }
-
-    final id = DateTime.now().millisecondsSinceEpoch.toString();
-
-    final pedidoFinal = pedidoService.crearPedido(
-      id: id,
-      cliente: usuarioActual!,
-      productos: productos,
+  Pedido? finalizarPedido(
+    String tipoEntrega,
+    MetodoPago metodoPago,
+    String? direccionEntrega,
+  ) {
+    final resultado = checkoutFacade.confirmarPedido(
+      carrito: carrito,
+      cliente: usuarioActual,
       tipoEntrega: tipoEntrega,
       metodoPago: metodoPago,
+      direccionEntrega: direccionEntrega,
     );
-
+    final pedidoFinal = resultado.pedido;
+    if (pedidoFinal == null) return null;
     pedidos.insert(0, pedidoFinal);
-
     carrito.clear();
-
     notifyListeners();
-
     return pedidoFinal;
   }
 
@@ -199,30 +295,14 @@ class QueueGoController extends ChangeNotifier {
   // =====================================================
 
   void repetirPedido(Pedido pedidoOriginal) {
-    if (usuarioActual == null) {
-      return;
-    }
-
-    final copia = pedidoService.clonarPedido(
-      pedidoOriginal: pedidoOriginal,
-      nuevoId: DateTime.now().millisecondsSinceEpoch.toString(),
-      nuevoCliente: usuarioActual!,
+    final copia = checkoutFacade.repetirPedido(
+      original: pedidoOriginal,
+      cliente: usuarioActual,
     );
-
-    carrito.clear();
-
-    for (final producto in copia.productos) {
-      final indice = carrito.indexWhere(
-        (item) => item.producto.id == producto.id,
-      );
-
-      if (indice >= 0) {
-        carrito[indice].incrementar();
-      } else {
-        carrito.add(CarritoItem(producto: producto));
-      }
-    }
-
+    if (copia == null) return;
+    carrito
+      ..clear()
+      ..addAll(copia);
     notifyListeners();
   }
 }

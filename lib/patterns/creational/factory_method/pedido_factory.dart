@@ -12,6 +12,7 @@ abstract class PedidoFactory {
     required String cliente,
     required List<Producto> productos,
     required MetodoPago metodoPago,
+    String? direccionEntrega,
     double? costoDomicilio,
   });
 }

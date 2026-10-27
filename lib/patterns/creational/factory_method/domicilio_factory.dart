@@ -12,12 +12,14 @@ class DomicilioFactory implements PedidoFactory {
     required String cliente,
     required List<Producto> productos,
     required MetodoPago metodoPago,
+    String? direccionEntrega,
     double? costoDomicilio,
   }) {
     return PedidoDomicilio(
       id: id,
       cliente: cliente,
       productos: productos,
+      direccionEntrega: direccionEntrega,
       metodoPago: metodoPago,
       costoDomicilio: costoDomicilio ?? AppConfig().tarifaDomicilio,
     );

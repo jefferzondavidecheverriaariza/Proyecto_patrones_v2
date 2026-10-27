@@ -1,10 +1,7 @@
 import '../../../models/producto.dart';
 import '../../creational/abstract_factory/bebida.dart';
 
-// =====================================================
-// ADAPTER - ADAPTER
-// Adapta Bebida (Adaptee) a Producto (Target).
-// =====================================================
+// ADAPTER: convierte una Bebida del menú en Producto para el carrito.
 class BebidaProductoAdapter extends Producto {
   BebidaProductoAdapter(Bebida bebida, {required String restauranteId})
     : super(

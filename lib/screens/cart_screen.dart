@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/carrito_item.dart';
+import '../models/direccion_entrega.dart';
 import '../models/metodo_pago.dart';
 import '../models/pedido.dart';
 import '../patterns/creational/singleton/app_config.dart';
@@ -8,12 +9,23 @@ import '../patterns/creational/singleton/app_config.dart';
 class CartScreen extends StatefulWidget {
   final List<CarritoItem> carrito;
 
-  final Pedido? Function(String tipoEntrega, MetodoPago metodoPago) onCheckout;
+  final List<DireccionEntrega> direcciones;
+  final String? direccionPredeterminadaId;
+  final Pedido? Function(
+    String tipoEntrega,
+    MetodoPago metodoPago,
+    String? direccionEntrega,
+  )
+  onCheckout;
+  final Future<List<DireccionEntrega>?> Function() onManageAddresses;
 
   const CartScreen({
     super.key,
     required this.carrito,
+    required this.direcciones,
+    required this.direccionPredeterminadaId,
     required this.onCheckout,
+    required this.onManageAddresses,
   });
 
   @override
@@ -24,6 +36,27 @@ class _CartScreenState extends State<CartScreen> {
   String tipoEntrega = 'Domicilio';
 
   MetodoPago metodoPago = MetodoPago.efectivo;
+  String? direccionSeleccionadaId;
+  late List<DireccionEntrega> direcciones;
+
+  @override
+  void initState() {
+    super.initState();
+    direcciones = List.of(widget.direcciones);
+    direccionSeleccionadaId = widget.direccionPredeterminadaId;
+  }
+
+  @override
+  void didUpdateWidget(covariant CartScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    direcciones = List.of(widget.direcciones);
+    final direccionExiste = direcciones.any(
+      (direccion) => direccion.id == direccionSeleccionadaId,
+    );
+    if (!direccionExiste) {
+      direccionSeleccionadaId = widget.direccionPredeterminadaId;
+    }
+  }
 
   double get subtotal {
     return widget.carrito.fold(0, (total, item) => total + item.subtotal);
@@ -50,7 +83,14 @@ class _CartScreenState extends State<CartScreen> {
       return;
     }
 
-    final pedido = widget.onCheckout(tipoEntrega, metodoPago);
+    final direccion = direcciones
+        .where((item) => item.id == direccionSeleccionadaId)
+        .firstOrNull;
+    final pedido = widget.onCheckout(
+      tipoEntrega,
+      metodoPago,
+      direccion == null ? null : '${direccion.etiqueta}: ${direccion.resumen}',
+    );
 
     if (pedido == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -117,48 +157,153 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildCarrito(AppConfig appConfig) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 760),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
+          children: [
+            const Text(
+              'Productos',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 12),
+
+            ...widget.carrito.map((item) => _buildProducto(item)),
+
+            const SizedBox(height: 24),
+
+            _buildTipoEntrega(),
+
+            if (tipoEntrega == 'Domicilio') ...[
+              const SizedBox(height: 16),
+              _buildDireccionEntrega(),
+            ],
+
+            const SizedBox(height: 24),
+
+            _buildMetodoPago(),
+
+            const SizedBox(height: 24),
+
+            _buildResumen(appConfig),
+
+            const SizedBox(height: 24),
+
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: FilledButton.icon(
+                onPressed:
+                    tipoEntrega == 'Domicilio' &&
+                        !direcciones.any(
+                          (direccion) =>
+                              direccion.id == direccionSeleccionadaId,
+                        )
+                    ? null
+                    : confirmarPedido,
+                icon: const Icon(Icons.check_circle_outline),
+                label: Text(
+                  'Confirmar pedido · ${formatoPrecio(total)}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDireccionEntrega() {
+    final seleccionadaExiste = direcciones.any(
+      (direccion) => direccion.id == direccionSeleccionadaId,
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Productos',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          'Dirección de entrega',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-
-        const SizedBox(height: 12),
-
-        ...widget.carrito.map((item) => _buildProducto(item)),
-
-        const SizedBox(height: 24),
-
-        _buildTipoEntrega(),
-
-        const SizedBox(height: 24),
-
-        _buildMetodoPago(),
-
-        const SizedBox(height: 24),
-
-        _buildResumen(appConfig),
-
-        const SizedBox(height: 24),
-
-        SizedBox(
-          width: double.infinity,
-          height: 54,
-          child: FilledButton.icon(
-            onPressed: confirmarPedido,
-            icon: const Icon(Icons.check_circle_outline),
-            label: Text(
-              'Confirmar pedido · ${formatoPrecio(total)}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
+        const SizedBox(height: 10),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: direcciones.isEmpty
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Agrega una dirección para continuar con el domicilio.',
+                      ),
+                      const SizedBox(height: 10),
+                      OutlinedButton.icon(
+                        onPressed: _gestionarDirecciones,
+                        icon: const Icon(Icons.add_location_alt_outlined),
+                        label: const Text('Agregar dirección'),
+                      ),
+                    ],
+                  )
+                : Column(
+                    children: [
+                      DropdownButtonFormField<String>(
+                        initialValue: seleccionadaExiste
+                            ? direccionSeleccionadaId
+                            : null,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Entregar en',
+                          prefixIcon: Icon(Icons.location_on_outlined),
+                        ),
+                        items: direcciones
+                            .map(
+                              (direccion) => DropdownMenuItem(
+                                value: direccion.id,
+                                child: Text(
+                                  '${direccion.etiqueta} · ${direccion.direccion}',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (id) {
+                          setState(() => direccionSeleccionadaId = id);
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: _gestionarDirecciones,
+                          icon: const Icon(Icons.edit_location_alt_outlined),
+                          label: const Text('Administrar direcciones'),
+                        ),
+                      ),
+                    ],
+                  ),
           ),
         ),
-
-        const SizedBox(height: 20),
       ],
     );
+  }
+
+  Future<void> _gestionarDirecciones() async {
+    final actualizadas = await widget.onManageAddresses();
+    if (!mounted || actualizadas == null) return;
+    setState(() {
+      direcciones = actualizadas;
+      direccionSeleccionadaId = direcciones
+          .where((direccion) => direccion.esPredeterminada)
+          .firstOrNull
+          ?.id;
+    });
   }
 
   Widget _buildProducto(CarritoItem item) {
@@ -195,6 +340,16 @@ class _CartScreenState extends State<CartScreen> {
                       fontSize: 16,
                     ),
                   ),
+                  if (item.producto.detalle.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      item.producto.detalle,
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 4),
                   Text(
                     formatoPrecio(item.producto.precio),

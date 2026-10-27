@@ -9,6 +9,7 @@ abstract class PedidoService {
     required List<Producto> productos,
     required String tipoEntrega,
     required MetodoPago metodoPago,
+    String? direccionEntrega,
   });
 
   Pedido clonarPedido({

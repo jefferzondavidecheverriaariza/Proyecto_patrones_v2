@@ -28,6 +28,7 @@ class PedidoPrototype {
         cliente: cliente,
         productos: productos,
         metodoPago: metodoPago,
+        direccionEntrega: pedidoOriginal.direccionEntrega,
         costoDomicilio: pedidoOriginal.costoDomicilio,
       );
     }
@@ -45,6 +46,7 @@ class PedidoPrototype {
       id: id,
       cliente: cliente,
       tipo: pedidoOriginal.tipo,
+      direccionEntrega: pedidoOriginal.direccionEntrega,
       metodoPago: metodoPago,
       costoDomicilio: pedidoOriginal.costoDomicilio,
       productos: productos,

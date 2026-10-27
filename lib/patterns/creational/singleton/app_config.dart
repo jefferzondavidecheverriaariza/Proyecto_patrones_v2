@@ -29,4 +29,3 @@ class AppConfig {
     return '$nombreAplicacion - Moneda: $moneda';
   }
 }
-

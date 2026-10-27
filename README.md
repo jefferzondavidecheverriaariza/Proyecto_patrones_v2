@@ -14,13 +14,13 @@ QueueGo busca digitalizar la coordinación de restaurantes, clientes, repartidor
 
 - Flutter.
 - Dart.
-- Supabase Auth.
-- Supabase PostgreSQL.
-- Supabase RLS (Row Level Security).
-- Supabase Realtime.
-- Riverpod.
-- Geolocator.
+- SharedPreferences (persistencia local de direcciones).
 - Flutter Web.
+
+> **Estado de integración:** esta versión usa inicio de sesión de demostración y
+> guarda las direcciones en el dispositivo. Supabase todavía no está conectado
+> al código ni configurado en las dependencias; por eso los datos locales no se
+> sincronizan entre dispositivos.
 
 ## 3. Roles del sistema
 
@@ -33,18 +33,19 @@ QueueGo busca digitalizar la coordinación de restaurantes, clientes, repartidor
 
 ### Funcionalidades actuales
 
-- Inicio de sesión con Supabase Auth.
-- Creación automática del perfil mediante trigger.
-- Identificación del rol del usuario.
-- Dashboards independientes por rol.
-- Consulta de restaurantes desde Supabase.
-- Diseño responsive inicial.
+- Inicio de sesión de demostración.
+- Catálogo local de restaurantes, menús y combos.
+- Carrito con personalización de productos, extras y bebidas.
+- Confirmación de pedidos con modalidad de entrega y método de pago.
+- Consulta y repetición de pedidos durante la sesión.
+- Gestión de varias direcciones de entrega, guardadas localmente por usuario
+  introducido en la sesión.
+- Diseño adaptable a móvil y escritorio.
 
 ### Funcionalidades en desarrollo
 
-- Catálogo de productos.
-- Carrito de compras.
-- Creación y seguimiento de pedidos.
+- Autenticación real y sincronización de datos con Supabase.
+- Persistencia remota de restaurantes, productos y pedidos.
 - Gestión de pedidos del restaurante.
 - Asignación de entregas.
 - GPS del repartidor.
@@ -66,7 +67,7 @@ Se utilizan para organizar y controlar la creación de objetos dentro de la apli
 | Singleton | AppConfig mantiene una instancia compartida de la configuración de la aplicación. |
 | Builder | PedidoBuilder permite construir pedidos progresivamente mediante diferentes atributos. |
 | Factory Method | PedidoFactory y sus implementaciones crean pedidos según el tipo de entrega, como domicilio o pedido local. |
-| Abstract Factory | MenuFactory y sus fábricas concretas generan familias de productos, como platos y bebidas, según el tipo de menú. |
+| Abstract Factory | MenuFactory y sus fábricas concretas generan familias de platos, bebidas, opciones de bebida y combos según el tipo de menú. |
 | Prototype | PedidoPrototype permite clonar pedidos anteriores para facilitar la repetición de pedidos. |
 
 ### 5.2. Patrones estructurales
@@ -76,8 +77,18 @@ Se utilizan para organizar las relaciones entre objetos y facilitar la comunicac
 | Patrón | Aplicación en QueueGo |
 |---|---|
 | Adapter | PlatoProductoAdapter y BebidaProductoAdapter adaptan los objetos Plato y Bebida al modelo Producto utilizado por el carrito. |
-| Decorator | PlatoDecorator permite agregar extras a los platos, como queso adicional, tocineta o salsas, modificando dinámicamente su descripción y precio. |
+| Decorator | PlatoDecorator permite agregar dinámicamente los extras de cada menú —incluidos queso, carnes, aguacate y aderezos— al nombre y precio del plato. TipoExtra centraliza su catálogo y aplicación. |
 | Facade | CheckoutFacade proporciona una interfaz unificada para coordinar la validación del carrito, conversión de productos, generación del identificador y creación del pedido. |
+
+Los combos y variantes de bebidas se definen en las fábricas concretas de
+Abstract Factory; las reglas de extras pertenecen al catálogo del patrón
+Decorator. La pantalla del restaurante se limita a presentar estos datos y a
+recoger la selección del cliente.
+
+Las direcciones se gestionan mediante `DireccionRepository`, con una
+implementación local basada en SharedPreferences. Esta abstracción permite
+incorporar una implementación remota más adelante sin acoplar la interfaz a
+Supabase.
 
 ### 5.3. Organización de los patrones
 
@@ -99,60 +110,53 @@ lib/
         └── facade/
 ```
 
-**Nota:** las clases de los patrones estructurales están desarrolladas. La integración completa de Adapter y Decorator con el flujo de las pantallas, así como la conexión de Facade con el controlador de pedidos, debe completarse y verificarse para considerar los tres patrones plenamente integrados en la aplicación.
-
 ## 6. Arquitectura del proyecto
 
-La arquitectura busca separar las responsabilidades y evitar que las pantallas dependan directamente de la lógica de acceso a datos.
+La aplicación separa la interfaz, el controlador de estado, los servicios y los
+modelos. Para las direcciones, la interfaz depende de `DireccionRepository` y
+su implementación local guarda los datos en SharedPreferences.
 
 ```text
-screens
-   |
-   v
-repositories (interfaces)
-   |
-   v
-services (implementaciones)
-   |
-   v
-Supabase
+screens -> QueueGoController -> DireccionRepository -> LocalDireccionRepository
+                                                   -> SharedPreferences
 ```
 
-Los modelos se mantienen separados de la lógica de acceso a datos. Los patrones de diseño complementan esta organización para facilitar la creación de objetos, la adaptación de componentes y la coordinación de procesos.
+Los patrones de diseño organizan la creación de menús y pedidos, la adaptación
+de platos al carrito, la personalización con extras y la coordinación del
+checkout. La implementación remota puede añadirse detrás de la abstracción del
+repositorio cuando se configure Supabase.
 
 ## 7. Base de datos
 
-La estructura de datos contempla las siguientes tablas:
-
-- `profiles`
-- `restaurants`
-- `products`
-- `orders`
-- `order_items`
-- `deliveries`
+La aplicación actual no usa una base de datos remota. Para una futura integración
+con Supabase se deberán definir y proteger las tablas de perfiles, restaurantes,
+productos y pedidos. Las direcciones deberán asociarse al identificador
+autenticado del cliente y protegerse con políticas RLS; no basta con crear una
+tabla si todavía no existe autenticación real en la aplicación.
 
 ## 8. Principios SOLID aplicados
 
-- **SRP (Single Responsibility Principle):** separación de responsabilidades entre modelos, repositorios, servicios, pantallas y dashboards.
-- **OCP (Open/Closed Principle):** organización de roles y módulos para facilitar la extensión del sistema sin modificar innecesariamente los componentes existentes.
-- **DIP (Dependency Inversion Principle):** la interfaz de usuario trabaja contra abstracciones como `AuthRepository` y `RestaurantRepository`.
-- **ISP (Interface Segregation Principle):** utilización de interfaces pequeñas y específicas según las responsabilidades de cada componente.
-- **LSP (Liskov Substitution Principle):** se procura que las implementaciones puedan utilizarse respetando los contratos definidos por sus abstracciones.
+- **SRP (Single Responsibility Principle):** pantallas, controlador, repositorios,
+  modelos y patrones tienen responsabilidades diferenciadas.
+- **OCP (Open/Closed Principle):** `DireccionRepository` permite incorporar otra
+  persistencia sin que las pantallas conozcan SharedPreferences o Supabase.
+- **DIP (Dependency Inversion Principle):** el controlador depende de la
+  abstracción `DireccionRepository`, no de su implementación local.
+- **ISP (Interface Segregation Principle):** el contrato del repositorio expone
+  únicamente las operaciones requeridas para administrar direcciones.
+- **LSP (Liskov Substitution Principle):** cualquier implementación del contrato
+  de direcciones debe respetar las operaciones y sus resultados.
 
 ## 9. Refactorización y control de cambios
 
 Los principales cambios realizados durante el desarrollo incluyen:
 
-1. Separación de responsabilidades.
-2. Sustitución de la autenticación local de demostración por Supabase Auth.
-3. Modelado de roles mediante `UserRole`.
-4. Separación de dashboards por rol.
-5. Abstracción del acceso a datos mediante repositorios.
-6. Implementación de servicios concretos para Supabase.
-7. Incorporación de patrones creacionales para organizar la creación de objetos.
-8. Incorporación de patrones estructurales para facilitar la relación y comunicación entre componentes.
-9. Organización de los patrones en carpetas independientes.
-10. Documentación de la arquitectura y los diagramas UML.
+1. Separación de responsabilidades entre interfaz, controlador, servicios y
+   modelos.
+2. Incorporación de patrones creacionales y estructurales para menús, pedidos,
+   extras y checkout.
+3. Gestión local de direcciones mediante un repositorio sustituible.
+4. Adaptación de las pantallas principales a tamaños móviles y de escritorio.
 
 ## 10. Documentación
 

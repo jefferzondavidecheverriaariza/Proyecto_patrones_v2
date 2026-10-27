@@ -11,7 +11,7 @@ class HomeScreen extends StatefulWidget {
   final int cantidadCarrito;
   final String usuario;
   final VoidCallback onOpenCart;
-  final void Function(Producto producto) onAddToCart;
+  final void Function(Producto) onAddToCart;
 
   const HomeScreen({
     super.key,
@@ -29,10 +29,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final buscadorController = TextEditingController();
-
   String categoriaSeleccionada = 'Todos';
 
-  final categorias = ['Todos', 'Hamburguesas', 'Saludable', 'Comida rápida'];
+  final categorias = const [
+    'Todos',
+    'Hamburguesas',
+    'Saludable',
+    'Comida rápida',
+  ];
 
   @override
   void dispose() {
@@ -40,231 +44,373 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  List<Restaurante> get restaurantesFiltrados {
-    final texto = buscadorController.text.toLowerCase();
-
+  List<Restaurante> get filtrados {
+    final consulta = buscadorController.text.toLowerCase();
     return widget.restaurantes.where((restaurante) {
-      final coincideTexto =
-          restaurante.nombre.toLowerCase().contains(texto) ||
-          restaurante.categoria.toLowerCase().contains(texto);
-
+      final coincideBusqueda =
+          restaurante.nombre.toLowerCase().contains(consulta) ||
+          restaurante.categoria.toLowerCase().contains(consulta);
       final coincideCategoria =
           categoriaSeleccionada == 'Todos' ||
           restaurante.categoria == categoriaSeleccionada;
-
-      return coincideTexto && coincideCategoria;
+      return coincideBusqueda && coincideCategoria;
     }).toList();
   }
 
-  IconData iconoRestaurante(String categoria) {
-    switch (categoria) {
-      case 'Saludable':
-        return Icons.eco_outlined;
+  IconData icono(String categoria) {
+    if (categoria == 'Saludable') return Icons.eco_rounded;
+    if (categoria == 'Comida rápida') return Icons.local_pizza_rounded;
+    return Icons.lunch_dining_rounded;
+  }
 
-      case 'Comida rápida':
-        return Icons.fastfood_outlined;
-
-      default:
-        return Icons.lunch_dining_outlined;
-    }
+  Color color(String categoria) {
+    if (categoria == 'Saludable') return const Color(0xFF319B70);
+    if (categoria == 'Comida rápida') return const Color(0xFFE99A36);
+    return const Color(0xFFFF6B35);
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-      children: [
-        Text(
-          'Hola, ${widget.usuario}',
-          style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-        ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final esAmplio = constraints.maxWidth >= 850;
+        final columnas = constraints.maxWidth >= 1150
+            ? 3
+            : constraints.maxWidth >= 650
+            ? 2
+            : 1;
 
-        const SizedBox(height: 5),
-
-        const Text(
-          '¿Qué quieres pedir hoy?',
-          style: TextStyle(color: Colors.grey, fontSize: 15),
-        ),
-
-        const SizedBox(height: 20),
-
-        TextField(
-          controller: buscadorController,
-          onChanged: (_) {
-            setState(() {});
-          },
-          decoration: InputDecoration(
-            hintText: 'Buscar restaurantes o comida...',
-            prefixIcon: const Icon(Icons.search),
-            filled: true,
-            fillColor: Colors.grey.shade100,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 20),
-
-        SizedBox(
-          height: 42,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: categorias.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 8),
-            itemBuilder: (context, index) {
-              final categoria = categorias[index];
-
-              final seleccionada = categoria == categoriaSeleccionada;
-
-              return ChoiceChip(
-                label: Text(categoria),
-                selected: seleccionada,
-                selectedColor: Colors.deepOrange,
-                labelStyle: TextStyle(
-                  color: seleccionada ? Colors.white : Colors.black87,
-                  fontWeight: FontWeight.w600,
-                ),
-                onSelected: (_) {
-                  setState(() {
-                    categoriaSeleccionada = categoria;
-                  });
-                },
-              );
-            },
-          ),
-        ),
-
-        const SizedBox(height: 28),
-
-        const Text(
-          'Restaurantes cerca de ti',
-          style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
-        ),
-
-        const SizedBox(height: 15),
-
-        ...restaurantesFiltrados.map((restaurante) {
-          return _RestaurantCard(
-            restaurante: restaurante,
-            icono: iconoRestaurante(restaurante.categoria),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => RestaurantScreen(
-                    restaurante: restaurante,
-
-                    // Carrito actual
-                    carrito: widget.carrito,
-
-                    // Agregar producto al carrito
-                    onAddToCart: widget.onAddToCart,
-
-                    // Abrir carrito
-                    onOpenCart: widget.onOpenCart,
-                  ),
-                ),
-              );
-            },
-          );
-        }),
-
-        if (restaurantesFiltrados.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(30),
-            child: Center(child: Text('No encontramos resultados.')),
-          ),
-      ],
-    );
-  }
-}
-
-class _RestaurantCard extends StatelessWidget {
-  final Restaurante restaurante;
-  final IconData icono;
-  final VoidCallback onTap;
-
-  const _RestaurantCard({
-    required this.restaurante,
-    required this.icono,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 1,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 76,
-                height: 76,
-                decoration: BoxDecoration(
-                  color: Colors.deepOrange.shade50,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Icon(icono, size: 38, color: Colors.deepOrange),
+        return Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1040),
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(
+                esAmplio ? 32 : 18,
+                26,
+                esAmplio ? 32 : 18,
+                36,
               ),
-
-              const SizedBox(width: 15),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Text(
-                      restaurante.nombre,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Hola, ${widget.usuario}',
+                            style: TextStyle(
+                              fontSize: esAmplio ? 30 : 25,
+                              fontWeight: FontWeight.w900,
+                              color: const Color(0xFF20232A),
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          const Text(
+                            '¿Qué se te antoja hoy?',
+                            style: TextStyle(
+                              color: Color(0xFF777D87),
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-
-                    const SizedBox(height: 5),
-
-                    Text(
-                      restaurante.descripcion,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    Row(
-                      children: [
-                        const Icon(Icons.schedule, size: 16),
-
-                        const SizedBox(width: 4),
-
-                        Text(restaurante.tiempoEntrega),
-
-                        const SizedBox(width: 12),
-
-                        const Icon(Icons.star, size: 16, color: Colors.amber),
-
-                        const SizedBox(width: 3),
-
-                        const Text('4.8'),
-                      ],
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFE9E1),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(
+                        Icons.delivery_dining,
+                        color: Color(0xFFFF6B35),
+                        size: 27,
+                      ),
                     ),
                   ],
                 ),
-              ),
-
-              const Icon(Icons.chevron_right),
-            ],
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFF784C), Color(0xFFE94D2D)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Tu comida favorita,',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const Text(
+                              'a un clic de distancia',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Pide fácil. Disfruta más.',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.9),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            FilledButton.tonal(
+                              onPressed: () {
+                                setState(() => categoriaSeleccionada = 'Todos');
+                              },
+                              style: FilledButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: const Color(0xFFE94D2D),
+                              ),
+                              child: const Text('Explorar restaurantes'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Icon(
+                        Icons.delivery_dining_rounded,
+                        color: Colors.white,
+                        size: esAmplio ? 92 : 66,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                TextField(
+                  controller: buscadorController,
+                  onChanged: (_) => setState(() {}),
+                  decoration: const InputDecoration(
+                    hintText: 'Buscar restaurantes o categorías',
+                    prefixIcon: Icon(Icons.search_rounded),
+                    suffixIcon: Icon(Icons.tune_rounded),
+                  ),
+                ),
+                const SizedBox(height: 22),
+                const Text(
+                  'Explora por categoría',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 42,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: categorias.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 9),
+                    itemBuilder: (context, index) {
+                      final categoria = categorias[index];
+                      final seleccionada = categoria == categoriaSeleccionada;
+                      return ChoiceChip(
+                        label: Text(categoria),
+                        selected: seleccionada,
+                        onSelected: (_) {
+                          setState(() => categoriaSeleccionada = categoria);
+                        },
+                        selectedColor: const Color(0xFFFFE5DC),
+                        backgroundColor: Colors.white,
+                        side: BorderSide(
+                          color: seleccionada
+                              ? const Color(0xFFFFB69E)
+                              : const Color(0xFFE8E9ED),
+                        ),
+                        labelStyle: TextStyle(
+                          color: seleccionada
+                              ? const Color(0xFFE85C36)
+                              : const Color(0xFF555B65),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 26),
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Restaurantes destacados',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${filtrados.length} lugares',
+                      style: const TextStyle(
+                        color: Color(0xFF858A93),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                if (filtrados.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(30),
+                    child: Center(
+                      child: Text(
+                        'No encontramos restaurantes con esa búsqueda.',
+                      ),
+                    ),
+                  )
+                else
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: filtrados.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: columnas,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      mainAxisExtent: esAmplio ? 235 : 210,
+                    ),
+                    itemBuilder: (context, index) {
+                      final restaurante = filtrados[index];
+                      final colorRestaurante = color(restaurante.categoria);
+                      return Material(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () {
+                            Navigator.push<void>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => RestaurantScreen(
+                                  restaurante: restaurante,
+                                  carrito: widget.carrito,
+                                  onAddToCart: widget.onAddToCart,
+                                  onOpenCart: widget.onOpenCart,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(17),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: const Color(0xFFEDEEF1),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 58,
+                                      height: 58,
+                                      decoration: BoxDecoration(
+                                        color: colorRestaurante.withValues(
+                                          alpha: 0.12,
+                                        ),
+                                        borderRadius: BorderRadius.circular(17),
+                                      ),
+                                      child: Icon(
+                                        icono(restaurante.categoria),
+                                        color: colorRestaurante,
+                                        size: 31,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    const Icon(
+                                      Icons.star_rounded,
+                                      color: Color(0xFFFFB547),
+                                      size: 18,
+                                    ),
+                                    const SizedBox(width: 3),
+                                    const Text(
+                                      '4.8',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const Spacer(),
+                                Text(
+                                  restaurante.nombre,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 17,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  restaurante.descripcion,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Color(0xFF858A93),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.schedule_rounded,
+                                      size: 16,
+                                      color: colorRestaurante,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      restaurante.tiempoEntrega,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    const Text(
+                                      'Ver menú',
+                                      style: TextStyle(
+                                        color: Color(0xFFE85C36),
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.arrow_forward_rounded,
+                                      size: 16,
+                                      color: Color(0xFFE85C36),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

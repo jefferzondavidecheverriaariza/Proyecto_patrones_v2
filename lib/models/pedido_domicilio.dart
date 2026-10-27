@@ -5,6 +5,7 @@ class PedidoDomicilio extends Pedido {
     required super.id,
     required super.cliente,
     required super.productos,
+    required super.direccionEntrega,
     required super.metodoPago,
     required super.costoDomicilio,
   }) : super(tipo: 'Domicilio');

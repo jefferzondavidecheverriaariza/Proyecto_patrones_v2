@@ -1,4 +1,4 @@
-  class Restaurante {
+class Restaurante {
   final String id;
   final String nombre;
   final String categoria;

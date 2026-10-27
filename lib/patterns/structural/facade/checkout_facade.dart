@@ -21,11 +21,14 @@ class CheckoutFacade {
   final GeneradorIdPedido _generadorId;
 
   CheckoutFacade({
-    required this._pedidoService,
-    required this._validador,
-    required this._conversor,
-    required this._generadorId,
-  });
+    required PedidoService pedidoService,
+    required ValidadorCarrito validador,
+    required ConversorCarrito conversor,
+    required GeneradorIdPedido generadorId,
+  }) : _pedidoService = pedidoService,
+       _validador = validador,
+       _conversor = conversor,
+       _generadorId = generadorId;
 
   // ---------------------------------------------------
   // Confirmar pedido
@@ -36,6 +39,7 @@ class CheckoutFacade {
     required String? cliente,
     required String tipoEntrega,
     required MetodoPago metodoPago,
+    String? direccionEntrega,
   }) {
     final errorCarrito = _validador.validar(carrito);
 
@@ -47,6 +51,13 @@ class CheckoutFacade {
       return const ResultadoCheckout.fallo(_errorSesion);
     }
 
+    if (tipoEntrega == 'Domicilio' &&
+        (direccionEntrega == null || direccionEntrega.trim().isEmpty)) {
+      return const ResultadoCheckout.fallo(
+        'Selecciona una dirección para la entrega.',
+      );
+    }
+
     try {
       final pedido = _pedidoService.crearPedido(
         id: _generadorId.generar(),
@@ -54,6 +65,7 @@ class CheckoutFacade {
         productos: _conversor.aProductos(carrito),
         tipoEntrega: tipoEntrega,
         metodoPago: metodoPago,
+        direccionEntrega: direccionEntrega,
       );
 
       return ResultadoCheckout.exito(pedido);
